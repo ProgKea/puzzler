@@ -12,7 +12,6 @@ fn index(row: i32, col: i32, rows: i32, cols: i32) -> Option<usize> {
     if row < 0 || col < 0 || row > rows - 1 || col > cols - 1 {
         return None;
     }
-
     return Some((row * rows + col) as usize);
 }
 
@@ -238,14 +237,18 @@ async fn main() {
     let rows = (screen_width() / CELL_SIZE).floor() as usize;
     let cols = (screen_height() / CELL_SIZE).floor() as usize;
 
+    let mut paused = true;
     let mut grid = Grid::new(rows, cols);
 
     loop {
-        if is_key_pressed(KeyCode::Q) {
+        if is_key_down(KeyCode::Q) || is_key_down(KeyCode::Escape) {
             break;
         }
         if is_key_pressed(KeyCode::R) {
             grid = Grid::new(rows, cols);
+        }
+        if is_key_pressed(KeyCode::Space) {
+            paused ^= true;
         }
 
         clear_background(BACKGROUND_COLOR);
@@ -255,7 +258,10 @@ async fn main() {
         }
         grid.cells[grid.current].highlight(HIGHLIGHT_COLOR2);
 
-        grid.update_current();
+        if !paused {
+            grid.update_current();
+        }
+
         next_frame().await;
     }
 }
